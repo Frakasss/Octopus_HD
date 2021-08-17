@@ -58,7 +58,7 @@ void extractDigits(uint8_t (&buffer)[size], uint16_t value) {
   }
 }
 
-
+//###################################################################################################
 //###################################################################################################
 void drawSprite(Sprite sprite, uint8_t sliceY, uint16_t* buffer) {
   // Check if sprite has one part to show on the current slice
@@ -77,8 +77,36 @@ void drawSprite(Sprite sprite, uint8_t sliceY, uint16_t* buffer) {
         color = spritesheet[px + py * screenWidth];
         // If color is the color selected for the Sprite
         if (color == sprite.color) {
-          // Copies the color code into the rendering buffer
+          // Copies the color code into the rendering buffer  
           buffer[px + (py - sliceY) * screenWidth] = sBlack;
+        }
+      }
+    }
+  }
+}
+
+//###################################################################################################
+//###################################################################################################
+void drawItem(Sprite sprite, uint8_t sliceY, uint16_t* buffer, uint16_t xx, uint16_t yy) {
+  // Check if sprite has one part to show on the current slice
+  if (sliceY < (sprite.y+yy) + sprite.h && (sprite.y+yy) < sliceY + sliceHeight) {
+    // Determines the boundaries of the sprite surface within the current slice
+    uint16_t  xMin = sprite.x;
+    uint16_t  xMax = sprite.x + sprite.w - 1;
+    uint16_t  yMin = (sprite.y+yy) < sliceY ? sliceY : (sprite.y+yy);
+    uint16_t  yMax = (sprite.y+yy) + sprite.h >= sliceY + sliceHeight ? sliceY + sliceHeight - 1 : (sprite.y+yy) + sprite.h - 1;
+    uint16_t  px, py;
+    uint16_t color;
+    // Display the sprite pixels to be drawn
+    for (py = yMin; py <= yMax; py++) {
+      for (px = xMin; px <= xMax; px++) {
+        // Picks the pixel color from the spritesheet
+        color = IMAGE_ITEMS[px + (py-yy) * 355];
+        // If color is the color selected for the Sprite
+        if (color == sprite.color) {
+          // Copies the color code into the rendering buffer 
+          buffer[(px-xMin+xx) + (py - sliceY) * screenWidth] = sBlack;
+          //buffer[(px-xMin+xx) + (py-yMin+yy - sliceY) * screenWidth] = sBlack;
         }
       }
     }
@@ -144,7 +172,7 @@ void drawBackground(const uint16_t * background, const Sprite spriteToDisplay, u
     uint8_t sliceY = sliceIndex * sliceHeight;                                              // the top border of the current slice is calculated
     size_t backgroundOffset = (sliceY * screenWidth);
     memcpy(buffer, &background[backgroundOffset], bufferSize);                              // starts by drawing the background
-    if (displaySprite == true) {drawText(spriteToDisplay, sliceY, buffer, spriteX, spriteY);} // and finally draws the sprite if needed
+    //if (displaySprite == true) {drawText(spriteToDisplay, sliceY, buffer, spriteX, spriteY);} // and finally draws the sprite if needed
     if (sliceIndex != 0){                                                                   // then we make sure that the sending of the previous buffer to the DMA controller has taken place
       waitForPreviousDraw();
     }
@@ -188,20 +216,20 @@ void draw() {
 
     // draw octopus legs
 
-    for(size_t index = 0; index < octopusCurrentLegLength[0]; ++index){
+    for(size_t index = 0; index < octopusCurrentLeg1Length; ++index){
       drawSprite(spriteOctopusLeg1[index], sliceY, buffer);
     }
    
   
-    for(size_t index = 0; index < (octopusCurrentLegLength[1]); ++index){
+    for(size_t index = 0; index < octopusCurrentLeg2Length; ++index){
       drawSprite(spriteOctopusLeg2[index], sliceY, buffer);
     }
 
-    for(size_t index = 0; index < (octopusCurrentLegLength[2]); ++index){
+    for(size_t index = 0; index < octopusCurrentLeg3Length; ++index){
       drawSprite(spriteOctopusLeg3[index], sliceY, buffer);
     }
 
-    for(size_t index = 0; index < (octopusCurrentLegLength[3]); ++index){
+    for(size_t index = 0; index < octopusCurrentLeg4Length; ++index){
       drawSprite(spriteOctopusLeg4[index], sliceY, buffer);
     }
 
@@ -222,5 +250,50 @@ void draw() {
 
   // Wait until the DMA transfer is completed before entering the next cycle
   waitForPreviousDraw();
+}
+
+//###################################################################################################
+void drawMenu() { 
+  constexpr size_t bufferSize = (sizeof(uint16_t) * screenWidth * sliceHeight);
+  for (uint8_t sliceIndex = 0; sliceIndex < slices; sliceIndex++){
+    uint16_t * buffer = (sliceIndex % 2 == 0) ? buffer1 : buffer2;                          // buffers are switched according to the parity of sliceIndex
+    uint8_t sliceY = sliceIndex * sliceHeight;                                              // the top border of the current slice is calculated
+    memcpy(buffer, background + sliceY * screenWidth, 2 * screenWidth * sliceHeight);
+
+    drawItem(item_Menu, sliceY, buffer, 60, 5);
+    drawItem(item_Game, sliceY, buffer, 40, 45);
+    drawItem(item_Controls, sliceY, buffer, 40, 61);
+    drawItem(item_Credits, sliceY, buffer, 40, 77);
+
+    drawItem(item_Cursor, sliceY, buffer, 17, 29+(menuOption*16));
+    
+    if (sliceIndex != 0){                                                                   // then we make sure that the sending of the previous buffer to the DMA controller has taken place
+      waitForPreviousDraw();
+    }
+    customDrawBuffer(0, sliceY, buffer, screenWidth, sliceHeight);                          // after which we can then send the current buffer
+  }
+  waitForPreviousDraw();                                                                    // always wait until the DMA transfer is completed for the last slice before entering the next cycle 
+}
+
+//###################################################################################################
+void drawCredits(){
+  constexpr size_t bufferSize = (sizeof(uint16_t) * screenWidth * sliceHeight);
+  for (uint8_t sliceIndex = 0; sliceIndex < slices; sliceIndex++){
+    uint16_t * buffer = (sliceIndex % 2 == 0) ? buffer1 : buffer2;                          // buffers are switched according to the parity of sliceIndex
+    uint8_t sliceY = sliceIndex * sliceHeight;                                              // the top border of the current slice is calculated
+    memcpy(buffer, background + sliceY * screenWidth, 2 * screenWidth * sliceHeight);
+
+    drawItem(item_Credits, sliceY, buffer, 50, 5);
+    
+    drawItem(item_Jicehel, sliceY, buffer, 40, 45);
+    drawItem(item_Steph, sliceY, buffer, 40, 61);
+    drawItem(item_Frakasss, sliceY, buffer, 40, 77);
+   
+    if (sliceIndex != 0){                                                                   // then we make sure that the sending of the previous buffer to the DMA controller has taken place
+      waitForPreviousDraw();
+    }
+    customDrawBuffer(0, sliceY, buffer, screenWidth, sliceHeight);                          // after which we can then send the current buffer
+  }
+  waitForPreviousDraw();                                                                    // always wait until the DMA transfer is completed for the last slice before entering the next cycle 
 }
 #endif

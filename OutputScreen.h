@@ -3,7 +3,22 @@
 
 //################################################################################
 void outputScreen_titleScreen(){
-  drawBackground(splachScreen, spriteGameOver, 0, 0, false);
+  drawBackground(titleImage, fullScreen, 0, 0, false);
+}
+
+//################################################################################
+void outputScreen_menu(){
+  drawMenu();
+}
+
+//################################################################################
+void outputScreen_credits(){
+  drawCredits();
+}
+
+//################################################################################
+void outputScreen_controls(){
+  drawBackground(IMAGE_CONTROLS, fullScreen, 0, 0, false);
 }
 
 //################################################################################

@@ -55,6 +55,8 @@ void loop() {
       break;
 
     case MENU:
+      checkButton();
+      outputScreen_menu();
       break;
 
     case RUN: // Game running
@@ -70,7 +72,7 @@ void loop() {
       moveTick=(moveTick+1)%maxTick;
       break;
 
-    case GAMEOVER:  // GameOver screen
+    case GAMEOVER:  //GameOver screen
       checkButton();
       outputScreen_gameOver();
       break;
@@ -79,6 +81,15 @@ void loop() {
       checkButton();
       outputScreen_pause();
       break;
+      
+    case CREDITS:
+      checkButton();
+      outputScreen_credits();
+      break;
 
+    case CONTROLS:
+      checkButton();
+      outputScreen_controls();
+      break;
   }
 }

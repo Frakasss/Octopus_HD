@@ -7,6 +7,8 @@
 #define RUN 3
 #define PAUSE 4
 #define GAMEOVER 5
+#define CONTROLS 6
+#define CREDITS 7
 
 // -------------------------------------------------------------------------
 // Global constants
@@ -52,7 +54,7 @@ bool debug = false;
 // just for debug
 uint16_t oldVal;
 uint8_t speedAnim = 4;
-
+uint8_t menuOption = 1;
 // -------------------------------------------------------------------------
 // Sprite visibility
 // -------------------------------------------------------------------------
@@ -70,6 +72,11 @@ uint8_t octopusMoveLeg[4] = {1,1,1,1};
 // legs lengths
 const uint8_t octopusLegLength[4] = {4,5,4,3};
 uint8_t octopusCurrentLegLength[4]= {0,0,0,0};
+uint8_t octopusCurrentLeg1Length=0;
+uint8_t octopusCurrentLeg2Length=0;
+uint8_t octopusCurrentLeg3Length=0;
+uint8_t octopusCurrentLeg4Length=0;
+
 
 uint8_t octopusLegAnim[4] = {1, 1, 1, 1};
 bool octopusLegReverse[4] = {false, false, false,false};
